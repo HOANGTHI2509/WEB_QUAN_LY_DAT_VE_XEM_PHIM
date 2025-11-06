@@ -18,15 +18,15 @@
 [![DaiNam University](https://img.shields.io/badge/DaiNam%20University-orange?style=for-the-badge)](https://dainam.edu.vn)
 
 </div>
-[cite_start]Đây là đồ án Bài tập lớn (BTL) cho học phần "Phát triển Phần mềm Mã nguồn mở"[cite: 4]. Dự án tập trung vào việc xây dựng một website quản lý và đặt vé xem phim trực tuyến hoàn chỉnh, sử dụng kiến trúc "thuần PHP" (Server-Side Rendering) kết hợp với CSDL MySQL.
+Đây là bài tập lớn (BTL) cho học phần "Phát triển Phần mềm Mã nguồn mở". Dự án tập trung vào việc xây dựng một website quản lý và đặt vé xem phim trực tuyến hoàn chỉnh, sử dụng kiến trúc "thuần PHP" (Server-Side Rendering) kết hợp với CSDL MySQL.
 
 ## 📖 1. Giới thiệu
 
-Trong bối cảnh công nghệ phát triển, nhu cầu giải trí và sự tiện lợi của người dùng ngày càng tăng. [cite_start]Các hệ thống đặt vé truyền thống tại quầy bộc lộ nhiều hạn chế như tốn thời gian xếp hàng, khó chọn được vị trí ưng ý [cite: 34-36].
+Trong bối cảnh công nghệ phát triển, nhu cầu giải trí và sự tiện lợi của người dùng ngày càng tăng.Các hệ thống đặt vé truyền thống tại quầy bộc lộ nhiều hạn chế như tốn thời gian xếp hàng, khó chọn được vị trí ưng ý.
 
-[cite_start]**Mục tiêu của dự án** là giải quyết vấn đề này bằng cách xây dựng một hệ thống web[cite: 38]:
-1.  [cite_start]**Phía Khách hàng:** Cung cấp trải nghiệm đặt vé mượt mà, trực quan, từ bước chọn phim, chọn suất chiếu, đến chọn ghế ngồi [cite: 45-46].
-2.  [cite_start]**Phía Quản trị:** Cung cấp một công cụ (Admin Panel) mạnh mẽ để quản lý toàn bộ nghiệp vụ của rạp (quản lý phim, suất chiếu, phòng chiếu) [cite: 48-52].
+**Mục tiêu của dự án** là giải quyết vấn đề này bằng cách xây dựng một hệ thống web:
+1. **Phía Khách hàng:** Cung cấp trải nghiệm đặt vé mượt mà, trực quan, từ bước chọn phim, chọn suất chiếu, đến chọn ghế ngồi.
+2. **Phía Quản trị:** Cung cấp một công cụ (Admin Panel) mạnh mẽ để quản lý toàn bộ nghiệp vụ của rạp (quản lý phim, suất chiếu, phòng chiếu).
 
 ## 🔧 2. Các công nghệ được sử dụng
 <div align="center">
