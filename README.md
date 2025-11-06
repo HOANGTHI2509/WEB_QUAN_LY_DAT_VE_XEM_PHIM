@@ -18,3 +18,37 @@
 [![DaiNam University](https://img.shields.io/badge/DaiNam%20University-orange?style=for-the-badge)](https://dainam.edu.vn)
 
 </div>
+[cite_start]Đây là đồ án Bài tập lớn (BTL) cho học phần "Phát triển Phần mềm Mã nguồn mở"[cite: 4]. Dự án tập trung vào việc xây dựng một website quản lý và đặt vé xem phim trực tuyến hoàn chỉnh, sử dụng kiến trúc "thuần PHP" (Server-Side Rendering) kết hợp với CSDL MySQL.
+
+## 📖 1. Giới thiệu
+
+Trong bối cảnh công nghệ phát triển, nhu cầu giải trí và sự tiện lợi của người dùng ngày càng tăng. [cite_start]Các hệ thống đặt vé truyền thống tại quầy bộc lộ nhiều hạn chế như tốn thời gian xếp hàng, khó chọn được vị trí ưng ý [cite: 34-36].
+
+[cite_start]**Mục tiêu của dự án** là giải quyết vấn đề này bằng cách xây dựng một hệ thống web[cite: 38]:
+1.  [cite_start]**Phía Khách hàng:** Cung cấp trải nghiệm đặt vé mượt mà, trực quan, từ bước chọn phim, chọn suất chiếu, đến chọn ghế ngồi [cite: 45-46].
+2.  [cite_start]**Phía Quản trị:** Cung cấp một công cụ (Admin Panel) mạnh mẽ để quản lý toàn bộ nghiệp vụ của rạp (quản lý phim, suất chiếu, phòng chiếu) [cite: 48-52].
+
+## 🔧 2. Các công nghệ được sử dụng
+<div align="center">
+
+### Hệ điều hành
+![macOS](https://img.shields.io/badge/macOS-000000?style=for-the-badge&logo=macos&logoColor=F0F0F0)
+[![Windows](https://img.shields.io/badge/Windows-0078D6?style=for-the-badge&logo=windows&logoColor=white)](https://www.microsoft.com/en-us/windows/)
+[![Ubuntu](https://img.shields.io/badge/Ubuntu-E95420?style=for-the-badge&logo=ubuntu&logoColor=white)](https://ubuntu.com/)
+
+### Công nghệ chính
+[![PHP](https://img.shields.io/badge/PHP-777BB4?style=for-the-badge&logo=php&logoColor=white)](https://www.php.net/)
+[![HTML5](https://img.shields.io/badge/HTML5-E34F26?style=for-the-badge&logo=html5&logoColor=white)](#)
+[![CSS](https://img.shields.io/badge/CSS-1572B6?style=for-the-badge&logo=css3&logoColor=white)](#)
+[![SCSS](https://img.shields.io/badge/SCSS-CC6699?style=for-the-badge&logo=sass&logoColor=white)](#)
+[![JavaScript](https://img.shields.io/badge/JavaScript-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black)](#)
+[![Bootstrap](https://img.shields.io/badge/Bootstrap-563D7C?style=for-the-badge&logo=bootstrap&logoColor=white)](https://getbootstrap.com/)
+
+### Web Server & Database
+[![Apache](https://img.shields.io/badge/Apache-D22128?style=for-the-badge&logo=apache&logoColor=white)](https://httpd.apache.org/)
+[![MySQL](https://img.shields.io/badge/MySQL-4479A1?style=for-the-badge&logo=mysql&logoColor=white)](https://www.mysql.com/) 
+[![XAMPP](https://img.shields.io/badge/XAMPP-FB7A24?style=for-the-badge&logo=xampp&logoColor=white)](https://www.apachefriends.org/)
+
+### Database Management Tools
+[![MySQL Workbench](https://img.shields.io/badge/MySQL_Workbench-4479A1?style=for-the-badge&logo=mysql&logoColor=white)](https://dev.mysql.com/downloads/workbench/)
+</div>
