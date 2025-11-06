@@ -4,7 +4,7 @@
     </a>
 </h2>
 <h2 align="center">
-    Youth Union Member Management
+    Building a Movie Ticket Booking Management Web Application
 </h2>
 <div align="center">
     <p align="center">
