@@ -53,6 +53,7 @@ Trong bối cảnh công nghệ phát triển, nhu cầu giải trí và sự ti
 [![MySQL Workbench](https://img.shields.io/badge/MySQL_Workbench-4479A1?style=for-the-badge&logo=mysql&logoColor=white)](https://dev.mysql.com/downloads/workbench/)
 </div>
 ## 🚀 3. Hình ảnh các chức năng
+
 ## 1. Trang đăng nhập
 
 ![Đăng nhập / Đăng ký](docs/img/Trang_Dang_Nhap.png)
