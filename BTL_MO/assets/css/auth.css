@@ -1,20 +1,25 @@
 .auth-body {
-    overflow: hidden;
+    overflow-x: hidden; /* Chỉ ẩn thanh cuộn ngang */
+    overflow-y: auto;   /* Cho phép cuộn dọc nếu cần */
 }
 
 .auth-container {
     display: grid;
     grid-template-columns: 1fr 1fr;
     min-height: 100vh;
+    /* Thêm padding bottom để nút không bị dính sát mép dưới */
+    padding-bottom: 40px; 
 }
 
+/* Đảm bảo nội dung không bị đẩy quá cao */
 .auth-box {
     display: flex;
     flex-direction: column;
     justify-content: center;
-    padding: 60px;
+    padding: 40px 60px; /* Giảm padding trên/dưới một chút */
     max-width: 500px;
     margin: 0 auto;
+    height: 100%; /* Chiếm hết chiều cao cột */
 }
 
 .auth-header {

@@ -68,4 +68,5 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     header("location: ../View/admin/showtimes.php");
 }
 exit;
+
 ?>

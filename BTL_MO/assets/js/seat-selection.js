@@ -1,154 +1,144 @@
-/*
-=========================================================
-FILE HIỆU ỨNG TRANG CHỌN GHẾ
-- Xử lý UI: Chọn/bỏ chọn ghế
-- Tính tổng tiền
-- Đếm ngược
-- Cập nhật các input ẩn của Form
-=========================================================
-*/
+// BTL_MO/assets/js/seat-selection.js
 
+// Biến toàn cục lưu ghế đang chọn
 let selectedSeats = [];
+const MAX_SEATS = 8; // Giới hạn số ghế được chọn
 let countdownTime = 600; // 10 phút
 let countdownInterval;
 
-/*
-QUAN TRỌNG:
-Các biến sau đây phải được PHP định nghĩa TRƯỚC KHI file này được gọi
-(thường là trong <head> hoặc ngay trước thẻ <script> này)
-
-<script>
-  const showtimeId = <?php echo $showtime_id; ?>;
-  const seatPrices = {
-    normal: <?php echo $gia_ve_thuong; ?>,
-    vip: <?php echo $gia_ve_vip; ?>
-  };
-</script>
-
-*/
+// Khởi chạy khi trang tải xong
+document.addEventListener('DOMContentLoaded', () => {
+    startCountdown();
+    updateSummary(); // Reset trạng thái ban đầu
+});
 
 /**
- * Hàm được gọi khi nhấn vào một ghế
- * (Ghế này đã được PHP render ra với onclick="toggleSeat(this)")
+ * Xử lý khi click vào một ghế
+ * (Hàm này được gọi từ sự kiện onclick trong thẻ HTML do PHP sinh ra)
  */
 function toggleSeat(element) {
-    if (element.classList.contains('occupied')) {
-        return; // Không cho chọn ghế đã đặt
+    // 1. Chặn click nếu ghế đã bán hoặc không khả dụng
+    // (Dựa vào class CSS mà PHP đã gán)
+    if (element.classList.contains('occupied') || 
+        element.classList.contains('sold') || 
+        element.classList.contains('held') || 
+        element.classList.contains('reserved')) {
+        return;
     }
 
+    // 2. Lấy dữ liệu từ attributes
     const seatId = element.getAttribute('data-seat-id');
     const seatName = element.getAttribute('data-seat-name');
-    const seatType = element.getAttribute('data-seat-type');
-    const price = seatType === 'VIP' ? seatPrices.vip : seatPrices.normal;
+    // Lấy giá từ data-price (PHP đã tính sẵn giá gốc + phụ thu)
+    const price = parseFloat(element.getAttribute('data-price'));
 
+    // 3. Xử lý logic Chọn / Bỏ chọn
     if (element.classList.contains('selected')) {
         // Bỏ chọn
         element.classList.remove('selected');
+        // Xóa khỏi mảng
         selectedSeats = selectedSeats.filter(s => s.id !== seatId);
     } else {
-        // Chọn
-        if (selectedSeats.length >= 10) {
-            alert('Chỉ được chọn tối đa 10 ghế');
+        // Chọn mới
+        if (selectedSeats.length >= MAX_SEATS) {
+            alert(`Bạn chỉ được chọn tối đa ${MAX_SEATS} ghế.`);
             return;
         }
+        // Thêm class để đổi màu (Xanh lá)
         element.classList.add('selected');
-        selectedSeats.push({
-            id: seatId,
-            name: seatName,
-            type: seatType,
-            price: price
-        });
+        // Thêm vào mảng
+        selectedSeats.push({ id: seatId, name: seatName, price: price });
     }
 
+    // 4. Cập nhật giao diện bên phải (Tổng tiền, nút Tiếp tục)
     updateSummary();
-    startCountdown();
 }
 
 /**
- * Cập nhật tóm tắt đơn hàng (sidebar)
- * và Cập nhật các input ẩn cho form
+ * Cập nhật Sidebar (Danh sách ghế đã chọn & Tổng tiền)
  */
 function updateSummary() {
-    const selectedSeatsContainer = document.getElementById('selectedSeats');
+    const container = document.getElementById('selectedSeats');
+    const hiddenInputs = document.getElementById('hiddenInputs');
     const btnContinue = document.getElementById('btnContinue');
-    const formInputContainer = document.getElementById('seatFormInputContainer'); // Vùng chứa input ẩn
+    const totalPriceEl = document.getElementById('totalPrice');
 
+    // Xóa nội dung cũ
+    container.innerHTML = '';
+    hiddenInputs.innerHTML = '';
+
+    // Nếu chưa chọn ghế nào
     if (selectedSeats.length === 0) {
-        selectedSeatsContainer.innerHTML = '<p class="empty-message">Chưa chọn ghế</p>';
-        btnContinue.disabled = true;
-        formInputContainer.innerHTML = ''; // Xóa input
-    } else {
-        // Cập nhật thẻ tag (hiển thị)
-        selectedSeatsContainer.innerHTML = selectedSeats.map(seat => `
-            <div class="seat-tag ${seat.type === 'VIP' ? 'vip' : ''}">
-                ${seat.name}
-                <button type="button" onclick="removeSeat('${seat.id}')">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <line x1="18" y1="6" x2="6" y2="18"></line>
-                        <line x1="6" y1="6" x2="18" y2="18"></line>
-                    </svg>
-                </button>
-            </div>
-        `).join('');
-        
-        // Cập nhật input ẩn (để form PHP gửi đi)
-        formInputContainer.innerHTML = selectedSeats.map(seat => 
-            `<input type="hidden" name="seat_ids[]" value="${seat.id}">`
-        ).join('');
-
-        btnContinue.disabled = false;
+        container.innerHTML = '<p class="empty-message">Chưa chọn ghế</p>';
+        btnContinue.disabled = true; // Khóa nút
+        btnContinue.style.opacity = '0.5';
+        btnContinue.style.cursor = 'not-allowed';
+        totalPriceEl.textContent = '0 ₫';
+        return;
     }
 
-    // Cập nhật giá
-    const total = selectedSeats.reduce((sum, seat) => sum + seat.price, 0);
-    document.getElementById('seatsTotal').textContent = formatCurrency(total);
-    document.getElementById('totalPrice').textContent = formatCurrency(total);
+    // Vẽ lại danh sách ghế đã chọn
+    let total = 0;
+    selectedSeats.forEach(seat => {
+        // a. Hiển thị thẻ tag bên phải
+        const tag = document.createElement('div');
+        tag.className = 'seat-tag';
+        // Style inline cho nhanh (hoặc dùng CSS .seat-tag)
+        tag.style.cssText = "background: #333; padding: 5px 10px; border-radius: 15px; font-size: 13px; display: flex; align-items: center; gap: 5px; border: 1px solid #555; color: #fff; margin-bottom: 5px;";
+        tag.innerHTML = `${seat.name} <span style="cursor:pointer; color:#ff4444; font-weight:bold; margin-left:5px;" onclick="removeSeat('${seat.id}')">×</span>`;
+        container.appendChild(tag);
+
+        // b. Tạo input ẩn để gửi Form đi (QUAN TRỌNG NHẤT)
+        // Khi submit form, các input này sẽ được gửi sang trang tiếp theo
+        const input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = 'seat_ids[]'; // Mảng ID ghế
+        input.value = seat.id;
+        hiddenInputs.appendChild(input);
+
+        total += seat.price;
+    });
+
+    // Cập nhật tổng tiền
+    totalPriceEl.textContent = total.toLocaleString('vi-VN') + ' ₫';
+    
+    // Mở khóa nút tiếp tục
+    btnContinue.disabled = false;
+    btnContinue.style.opacity = '1';
+    btnContinue.style.cursor = 'pointer';
 }
 
 /**
- * Xóa ghế khỏi danh sách đã chọn (khi nhấn nút X trên tag)
+ * Xóa ghế khi nhấn vào dấu X ở sidebar
  */
 function removeSeat(seatId) {
-    const seatElement = document.querySelector(`[data-seat-id="${seatId}"]`);
-    if (seatElement) {
-        seatElement.classList.remove('selected');
+    // Tìm ghế trên màn hình (bằng data attribute) và bỏ class selected
+    const seatEl = document.querySelector(`.seat[data-seat-id="${seatId}"]`);
+    if (seatEl) {
+        seatEl.classList.remove('selected');
     }
+    // Xóa khỏi mảng dữ liệu
     selectedSeats = selectedSeats.filter(s => s.id !== seatId);
     updateSummary();
 }
 
 /**
- * Bắt đầu đếm ngược 10 phút
+ * Đếm ngược thời gian giữ ghế
  */
 function startCountdown() {
-    if (countdownInterval) {
-        return; // Đã chạy rồi, không chạy lại
-    }
+    const display = document.getElementById('countdown');
+    if (!display) return;
 
     countdownInterval = setInterval(() => {
-        countdownTime--;
+        let m = Math.floor(countdownTime / 60);
+        let s = countdownTime % 60;
+        // Thêm số 0 đằng trước nếu nhỏ hơn 10
+        display.textContent = `${m < 10 ? '0'+m : m}:${s < 10 ? '0'+s : s}`;
 
-        const minutes = Math.floor(countdownTime / 60);
-        const seconds = countdownTime % 60;
-        document.getElementById('countdown').textContent =
-            `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
-
-        if (countdownTime <= 0) {
+        if (--countdownTime < 0) {
             clearInterval(countdownInterval);
-            alert('Đã hết thời gian giữ ghế. Trang sẽ được tải lại.');
-            window.location.reload(); // Tải lại trang
+            alert("Hết thời gian giữ ghế. Trang sẽ tải lại.");
+            window.location.reload();
         }
     }, 1000);
 }
-
-// Hàm tiện ích (chỉ dùng cho file này)
-function formatCurrency(value) {
-    if (typeof value !== 'number') value = 0;
-    return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(value);
-}
-
-// Tự động kích hoạt khi trang tải
-document.addEventListener('DOMContentLoaded', () => {
-    // Nếu có lỗi (ví dụ: ?error=het_thoi_gian), PHP có thể in ra thông báo
-    // Bằng cách gọi hàm showNotification() từ all_effects.js
-});

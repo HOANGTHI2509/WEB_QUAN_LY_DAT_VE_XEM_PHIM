@@ -26,11 +26,21 @@ if ($filter == 'now-showing') {
     $filtered_movies = $all_movies;
 }
 
+// --- HÀM HỖ TRỢ HIỂN THỊ ẢNH (GIỐNG INDEX.PHP) ---
+function getPosterLink($url) {
+    if (strpos($url, 'http') === 0) {
+        return htmlspecialchars($url);
+    } elseif (!empty($url)) {
+        return "../../" . htmlspecialchars($url);
+    }
+    return "https://via.placeholder.com/400x600?text=No+Poster";
+}
+// ------------------------------------------------
+
 // 4. Include Header
+$page_css = "home.css"; // Sử dụng CSS của trang chủ (vì có .movie-grid)
 include 'partials/header.php';
 ?>
-
-<title><?php echo $page_title; ?> - CinemaHub</title>
 
 <main class="section">
     <div class="container">
@@ -45,15 +55,16 @@ include 'partials/header.php';
 
         <div class="movie-grid">
             <?php if (empty($filtered_movies)): ?>
-                <p class="empty-message">Không tìm thấy phim nào phù hợp.</p>
+                <p class="empty-message" style="color: var(--text-secondary);">Không tìm thấy phim nào phù hợp.</p>
             <?php else: ?>
                 <?php foreach ($filtered_movies as $movie): ?>
                     <div class="movie-card">
                         <div class="movie-poster">
-                            <img src="<?php echo htmlspecialchars($movie['PosterURL'] ?? 'https://via.placeholder.com/400x600'); ?>" alt="<?php echo htmlspecialchars($movie['Title']); ?>">
+                            <img src="<?php echo getPosterLink($movie['PosterURL']); ?>" 
+                                 alt="<?php echo htmlspecialchars($movie['Title']); ?>">
+                            
                             <div class="movie-overlay">
-                                <a href="movie-detail.php?id=<?php echo $movie['MovieID']; ?>" class="btn-detail">Chi tiết</a>
-                            </div>
+                                </div>
                         </div>
                         <div class="movie-info">
                             <h3><?php echo htmlspecialchars($movie['Title']); ?></h3>
@@ -64,7 +75,7 @@ include 'partials/header.php';
                             <?php if ($movie['Status'] == 'Đang chiếu'): ?>
                                 <a href="showtimes.php?movie_id=<?php echo $movie['MovieID']; ?>" class="btn-book-ticket">Đặt vé</a>
                             <?php else: ?>
-                                <button class="btn-book-ticket" disabled>Chưa mở bán</button>
+                                <button class="btn-book-ticket" disabled style="background: var(--bg-tertiary); cursor: not-allowed;">Chưa mở bán</button>
                             <?php endif; ?>
                             
                         </div>

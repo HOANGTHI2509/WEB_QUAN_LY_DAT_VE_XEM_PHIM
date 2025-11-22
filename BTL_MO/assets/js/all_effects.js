@@ -1,12 +1,6 @@
 /*
 =========================================================
-FILE HIỆU ỨNG CHUNG (UI)
-Chứa các hàm cho:
-- Mở/Đóng Modal
-- Slider trang chủ
-- Hiện/Ẩn mật khẩu
-- Nút Đăng xuất
-- Thông báo (nếu cần)
+FILE HIỆU ỨNG CHUNG (UI) - ĐÃ CẬP NHẬT
 =========================================================
 */
 
@@ -58,6 +52,33 @@ document.addEventListener('DOMContentLoaded', function() {
         setInterval(nextSlide, 5000); 
     }
 
+    // ===========================================
+    // LOGIC CHO CLICK DROPDOWN
+    // ===========================================
+    const userMenuButton = document.getElementById('userMenuButton');
+    const userMenuContent = document.getElementById('userMenuContent');
+    const userMenuDropdown = document.getElementById('userMenuDropdown');
+
+    if (userMenuButton && userMenuContent) {
+        // 1. Khi nhấn vào nút (Tên người dùng)
+        userMenuButton.addEventListener('click', function(event) {
+            // Thêm/Xóa class 'active'
+            userMenuContent.classList.toggle('active');
+            userMenuDropdown.classList.toggle('active');
+            event.stopPropagation();
+        });
+    }
+
+    // 2. Khi nhấn ra ngoài (window)
+    window.addEventListener('click', function(event) {
+        if (userMenuContent && userMenuContent.classList.contains('active')) {
+            if (!userMenuButton.contains(event.target)) {
+                userMenuContent.classList.remove('active');
+                userMenuDropdown.classList.remove('active');
+            }
+        }
+    });
+
 }); // --- Kết thúc DOMContentLoaded ---
 
 
@@ -65,10 +86,6 @@ document.addEventListener('DOMContentLoaded', function() {
 // CÁC HÀM TIỆN ÍCH GIAO DIỆN
 // =========================================================
 
-/**
- * Mở một modal (cửa sổ pop-up)
- * @param {string} modalId - ID của modal (ví dụ: 'addMovieModal')
- */
 function openModal(modalId) {
     const modal = document.getElementById(modalId);
     if (modal) {
@@ -76,10 +93,6 @@ function openModal(modalId) {
     }
 }
 
-/**
- * Đóng một modal
- * @param {string} modalId - ID của modal
- */
 function closeModal(modalId) {
     const modal = document.getElementById(modalId);
     if (modal) {
@@ -87,17 +100,12 @@ function closeModal(modalId) {
     }
 }
 
-// Thêm sự kiện để đóng modal khi nhấn ra ngoài
 document.addEventListener('click', function(e) {
     if (e.target.classList.contains('modal')) {
         e.target.classList.remove('active');
     }
 });
 
-/**
- * Hiển thị/Ẩn mật khẩu
- * @param {string} inputId - ID của input mật khẩu
- */
 function togglePassword(inputId) {
     const passwordInput = document.getElementById(inputId);
     if (passwordInput) {
@@ -106,10 +114,6 @@ function togglePassword(inputId) {
     }
 }
 
-/**
- * Hiển thị thông báo
- * (Dùng để hiển thị các thông báo từ URL, ví dụ: ?success=Them_thanh_cong)
- */
 function showNotification(message, type = 'success') {
     const notification = document.createElement('div');
     notification.className = `notification notification-${type}`;
@@ -129,18 +133,6 @@ function showNotification(message, type = 'success') {
         notification.classList.remove('show');
         setTimeout(() => {
             notification.remove();
-        }, 300);
+        }, 3000);
     }, 3000);
-}
-
-/**
- * Chuyển hướng đến trang đăng xuất
- */
-function logout() {
-    let path = '../Handle/logout_process.php';
-    // Kiểm tra xem có đang ở trong thư mục /admin/ không
-    if (window.location.pathname.includes('/admin/')) {
-         path = '../../Handle/logout_process.php';
-    }
-    window.location.href = path;
 }

@@ -3,24 +3,19 @@
 
 session_start();
 require_once '../functions/users_functions.php';
-
-// Kiểm tra quyền Admin
-if (!isset($_SESSION['user_id']) || $_SESSION['role'] != 'Admin') {
-    die("Bạn không có quyền truy cập.");
-}
+require_once '../functions/admin_gate.php';
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-
+    
+    // Kiểm tra action
     if (isset($_POST['action'])) {
-        
         $action = $_POST['action'];
-        $result = null;
-
+        
         try {
             switch ($action) {
-                // THÊM USER
+                // 1. THÊM NGƯỜI DÙNG
                 case 'add':
-                    $result = addUser($_POST); 
+                    $result = addUser($_POST);
                     if ($result === true) {
                         header("location: ../View/admin/users.php?success=add");
                     } else {
@@ -28,7 +23,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     }
                     break;
 
-                // CẬP NHẬT USER
+                // 2. CẬP NHẬT NGƯỜI DÙNG
                 case 'update':
                     $result = updateUser($_POST);
                     if ($result === true) {
@@ -37,8 +32,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                         throw new Exception($result);
                     }
                     break;
-                
-                // XÓA USER
+
+                // 3. XÓA NGƯỜI DÙNG
                 case 'delete':
                     if (isset($_POST['UserID'])) {
                         $result = deleteUser($_POST['UserID']);
@@ -48,7 +43,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                             throw new Exception($result['message']);
                         }
                     } else {
-                        throw new Exception("Thiếu ID người dùng để xóa.");
+                        throw new Exception("Thiếu ID người dùng.");
                     }
                     break;
                 
@@ -58,9 +53,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         } catch (Exception $e) {
             header("location: ../View/admin/users.php?error=" . urlencode($e->getMessage()));
         }
-
     } else {
-        header("location: ../View/admin/users.php?error=No_action");
+        header("location: ../View/admin/users.php");
     }
 } else {
     header("location: ../View/admin/users.php");

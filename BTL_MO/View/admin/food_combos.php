@@ -11,6 +11,7 @@ if ($action == 'edit' && isset($_GET['id'])) {
     $item_to_edit = getFoodComboById((int)$_GET['id']);
 }
 
+// Nếu là thêm mới, khởi tạo mảng rỗng để tránh lỗi
 if ($action == 'add') {
     $item_to_edit = [
         'FoodID' => '', 'Name' => '', 'Description' => '', 
@@ -22,6 +23,14 @@ $food_list = [];
 if ($action == 'list') {
     $food_list = getAllFoodCombos();
 }
+
+// Hàm hỗ trợ hiển thị ảnh
+function getFoodImage($url) {
+    if (empty($url)) return 'https://via.placeholder.com/150x150?text=No+Image';
+    // Nếu là link online (http) thì giữ nguyên, nếu là file upload thì thêm đường dẫn gốc
+    if (strpos($url, 'http') === 0) return htmlspecialchars($url);
+    return "../../" . htmlspecialchars($url);
+}
 ?>
 <!DOCTYPE html>
 <html lang="vi">
@@ -31,6 +40,13 @@ if ($action == 'list') {
     <title>Quản lý Đồ ăn - CinemaHub Admin</title>
     <link rel="stylesheet" href="../../assets/css/style.css">
     <link rel="stylesheet" href="../../assets/css/admin.css">
+    <style>
+        .preview-img {
+            width: 100px; height: 100px; 
+            object-fit: cover; border-radius: 8px; 
+            margin-top: 10px; border: 1px solid #444;
+        }
+    </style>
 </head>
 <body>
     <div class="admin-layout">
@@ -43,8 +59,7 @@ if ($action == 'list') {
                 <div class="header-actions">
                     <?php if ($action == 'list'): ?>
                         <button class="btn-add" onclick="openModal('addFoodModal')">
-                            <svg width="20" height="20"...></svg>
-                            <span>Thêm món mới</span>
+                            <span>+ Thêm món mới</span>
                         </button>
                     <?php endif; ?>
                     <div class="user-menu">
@@ -59,13 +74,7 @@ if ($action == 'list') {
                     <div class="alert alert-error"><?php echo htmlspecialchars($_GET['error']); ?></div>
                 <?php endif; ?>
                 <?php if (isset($_GET['success'])): ?>
-                    <div class="alert alert-success">
-                        <?php
-                        if ($_GET['success'] == 'add') echo "Thêm món mới thành công!";
-                        if ($_GET['success'] == 'update') echo "Cập nhật món thành công!";
-                        if ($_GET['success'] == 'delete') echo "Xóa món thành công!";
-                        ?>
-                    </div>
+                    <div class="alert alert-success">Thao tác thành công!</div>
                 <?php endif; ?>
 
                 <?php if ($action == 'edit' || $action == 'add'): ?>
@@ -75,13 +84,13 @@ if ($action == 'list') {
                         <h3><?php echo ($action == 'edit') ? 'Chỉnh sửa món' : 'Thêm món mới'; ?></h3>
                     </div>
                     
-                    <form action="../../Handle/food_process.php" method="POST">
+                    <form action="../../Handle/food_process.php" method="POST" enctype="multipart/form-data">
                         
                         <?php if ($action == 'edit'): ?>
                             <input type="hidden" name="action" value="update">
                             <input type="hidden" name="food_id" value="<?php echo $item_to_edit['FoodID']; ?>">
-                        <?php else: ?>
-                            <?php endif; ?>
+                            <input type="hidden" name="current_image" value="<?php echo htmlspecialchars($item_to_edit['ImageURL']); ?>">
+                        <?php endif; ?>
 
                         <div class="form-group">
                             <label>Tên món / combo</label>
@@ -95,16 +104,22 @@ if ($action == 'list') {
                             <label>Giá (VNĐ)</label>
                             <input type="number" name="price" value="<?php echo htmlspecialchars($item_to_edit['Price']); ?>" required step="1000" min="0">
                         </div>
+                        
                         <div class="form-group">
-                            <label>URL Hình ảnh</label>
-                            <input type="url" name="image_url" value="<?php echo htmlspecialchars($item_to_edit['ImageURL']); ?>">
+                            <label>Hình ảnh</label>
+                            <input type="file" name="image_file" accept="image/*" class="custom-input">
+                            <small style="color: #aaa;">Chấp nhận: JPG, PNG, GIF. Để trống nếu không muốn thay đổi ảnh.</small>
+                            
+                            <?php if (!empty($item_to_edit['ImageURL'])): ?>
+                                <div>
+                                    <img src="<?php echo getFoodImage($item_to_edit['ImageURL']); ?>" class="preview-img">
+                                </div>
+                            <?php endif; ?>
                         </div>
 
                         <div class="modal-footer">
                             <a href="food_combos.php" class="btn-action">Hủy</a>
-                            <button type="submit" class="btn-primary">
-                                Cập nhật
-                            </button>
+                            <button type="submit" class="btn-primary">Cập nhật</button>
                         </div>
                     </form>
                 </div>
@@ -131,16 +146,16 @@ if ($action == 'list') {
                                     <tr>
                                         <td><strong>#<?php echo $item['FoodID']; ?></strong></td>
                                         <td>
-                                            <img src="<?php echo htmlspecialchars($item['ImageURL'] ?? 'https://via.placeholder.com/50x50'); ?>"
+                                            <img src="<?php echo getFoodImage($item['ImageURL']); ?>"
                                                  alt="<?php echo htmlspecialchars($item['Name']); ?>"
-                                                 style="width: 50px; height: 50px; object-fit: cover; border-radius: 4px;">
+                                                 style="width: 60px; height: 60px; object-fit: cover; border-radius: 6px; border: 1px solid #444;">
                                         </td>
                                         <td><strong><?php echo htmlspecialchars($item['Name']); ?></strong></td>
-                                        <td><?php echo number_format($item['Price'], 0, ',', '.'); ?> ₫</td>
+                                        <td style="color: var(--primary-color); font-weight: bold;">
+                                            <?php echo number_format($item['Price'], 0, ',', '.'); ?> ₫
+                                        </td>
                                         <td>
-                                            <a href="food_combos.php?action=edit&id=<?php echo $item['FoodID']; ?>" class="btn-action">
-                                                Sửa
-                                            </a>
+                                            <a href="food_combos.php?action=edit&id=<?php echo $item['FoodID']; ?>" class="btn-action">Sửa</a>
                                             <form action="../../Handle/food_process.php" method="POST" style="display: inline-block;"
                                                   onsubmit="return confirm('Bạn có chắc chắn muốn xóa món này?');">
                                                 <input type="hidden" name="action" value="delete">
@@ -166,25 +181,26 @@ if ($action == 'list') {
                 <h2>Thêm món mới</h2>
                 <button class="btn-close" onclick="closeModal('addFoodModal')">&times;</button>
             </div>
-            <form id="addFoodForm" action="../../Handle/food_process.php" method="POST">
+            <form id="addFoodForm" action="../../Handle/food_process.php" method="POST" enctype="multipart/form-data">
                 <input type="hidden" name="action" value="add">
                 
                 <div class="modal-body">
                      <div class="form-group">
                         <label>Tên món / combo</label>
-                        <input type="text" name="name" required>
+                        <input type="text" name="name" required class="custom-input">
                     </div>
                     <div class="form-group">
                         <label>Mô tả</label>
-                        <textarea name="description" rows="3"></textarea>
+                        <textarea name="description" rows="3" class="custom-input"></textarea>
                     </div>
                     <div class="form-group">
                         <label>Giá (VNĐ)</label>
-                        <input type="number" name="price" required step="1000" min="0">
+                        <input type="number" name="price" required step="1000" min="0" class="custom-input">
                     </div>
+                    
                     <div class="form-group">
-                        <label>URL Hình ảnh</label>
-                        <input type="url" name="image_url" placeholder="https://example.com/image.png">
+                        <label>Hình ảnh</label>
+                        <input type="file" name="image_file" accept="image/*" class="custom-input" required>
                     </div>
                 </div>
                 <div class="modal-footer">

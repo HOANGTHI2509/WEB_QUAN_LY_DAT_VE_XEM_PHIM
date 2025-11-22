@@ -88,12 +88,15 @@ if ($action == 'list') {
                             <input type="text" name="code" value="<?php echo htmlspecialchars($item_to_edit['Code']); ?>" required>
                         </div>
                         <div class="form-group">
-                            <label>Giảm % (VD: 10 cho 10%)</label>
-                            <input type="number" name="discount_percent" value="<?php echo htmlspecialchars($item_to_edit['DiscountPercent']); ?>" min="0" max="100">
+                            <label>Giảm % (Bắt buộc)</label>
+                            <input type="number" name="discount_percent" value="<?php echo $item_to_edit['DiscountPercent'] ?? 0; ?>" min="0" max="100" required>
+                            <small style="color: #aaa;">Nhập số phần trăm muốn giảm (Ví dụ: 10).</small>
                         </div>
+
                         <div class="form-group">
-                            <label>Giảm tiền (VNĐ)</label>
-                            <input type="number" name="discount_value" value="<?php echo htmlspecialchars($item_to_edit['DiscountValue']); ?>" min="0" step="1000">
+                            <label>Mức giảm tối đa (VNĐ)</label>
+                            <input type="number" name="discount_value" value="<?php echo $item_to_edit['DiscountValue'] ?? 0; ?>" min="0" step="1000">
+                            <small style="color: #aaa;">Ví dụ: Nếu nhập 25000, đơn hàng dù lớn đến mấy cũng chỉ giảm tối đa 25k.</small>
                         </div>
                         <div class="form-group">
                             <label>Ngày bắt đầu</label>

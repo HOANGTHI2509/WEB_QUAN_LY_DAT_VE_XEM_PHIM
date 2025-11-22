@@ -105,6 +105,7 @@ body {
     gap: 16px;
 }
 
+/* --- SEARCH BOX (Đã sửa lỗi lệch icon) --- */
 .search-box {
     position: relative;
     display: flex;
@@ -115,7 +116,7 @@ body {
     background: var(--bg-secondary);
     border: 1px solid var(--border-color);
     border-radius: 24px;
-    padding: 10px 40px 10px 20px;
+    padding: 10px 40px 10px 20px; /* Chừa chỗ cho nút search */
     color: var(--text-primary);
     font-size: 14px;
     width: 250px;
@@ -128,12 +129,27 @@ body {
     width: 300px;
 }
 
-.search-box svg {
+.search-box .search-btn {
     position: absolute;
-    right: 15px;
+    right: 8px; /* Cách lề phải 8px */
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    padding: 6px; /* Vùng đệm để dễ bấm */
+    cursor: pointer;
     color: var(--text-secondary);
-    pointer-events: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: var(--transition);
 }
+
+.search-box .search-btn:hover {
+    color: var(--primary-color);
+}
+/* ----------------------------------------- */
+
 
 .btn-login {
     padding: 10px 24px;
@@ -236,25 +252,30 @@ body {
     box-shadow: var(--shadow-lg);
 }
 
+/* --- KHUNG CHỨA ẢNH (POSTER) --- */
 .movie-poster {
     position: relative;
     width: 100%;
-    padding-top: 150%;
+    aspect-ratio: 2/3; 
     overflow: hidden;
+    border-radius: 8px;
+    background-color: #222; 
+    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
 }
 
+/* --- ẢNH BÊN TRONG --- */
 .movie-poster img {
-    position: absolute;
-    top: 0;
-    left: 0;
     width: 100%;
     height: 100%;
-    object-fit: cover;
-    transition: var(--transition);
+    object-fit: cover; 
+    object-position: center top; 
+    transition: transform 0.5s ease;
+    display: block; 
 }
 
+/* --- HIỆU ỨNG KHI RÊ CHUỘT --- */
 .movie-card:hover .movie-poster img {
-    transform: scale(1.05);
+    transform: scale(1.1); 
 }
 
 .movie-overlay {
@@ -358,6 +379,9 @@ body {
     font-weight: 600;
     cursor: pointer;
     transition: var(--transition);
+    display: inline-block;
+    text-align: center;
+    text-decoration: none;
 }
 
 .btn-book-ticket:hover {
@@ -534,11 +558,115 @@ body {
     to { transform: rotate(360deg); }
 }
 
+/* ======================================== */
+/* CSS CHO USER DROPDOWN (Click-Toggle) */
+/* ======================================== */
+
+.nav-user-dropdown {
+    position: relative;
+    display: inline-block;
+}
+
+.nav-user-btn {
+    background: transparent;
+    border: none;
+    color: var(--text-secondary);
+    font-family: inherit;
+    font-size: 16px;
+    font-weight: 500;
+    cursor: pointer;
+    padding: 8px 0;
+    transition: var(--transition);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    position: relative;
+}
+
+.nav-user-btn::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 3px;
+    background: var(--primary-color);
+    border-radius: 2px;
+    transform: scaleX(0);
+    transition: var(--transition);
+}
+.nav-user-btn:hover::after {
+     transform: scaleX(1);
+}
+.nav-user-dropdown.active .nav-user-btn::after {
+    transform: scaleX(1);
+}
+
+.nav-user-btn:hover,
+.nav-user-dropdown.active .nav-user-btn {
+    color: var(--text-primary);
+}
+
+.nav-user-btn svg {
+    transition: var(--transition);
+    stroke: var(--text-secondary);
+}
+.nav-user-btn:hover svg,
+.nav-user-dropdown.active .nav-user-btn svg {
+    stroke: var(--text-primary);
+}
+
+.nav-user-dropdown.active .nav-user-btn svg {
+    transform: rotate(180deg);
+}
+
+.dropdown-content {
+    display: none;
+    position: absolute;
+    right: 0;
+    top: 100%;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    min-width: 180px;
+    box-shadow: var(--shadow-lg);
+    z-index: 1001;
+    padding: 8px;
+    margin-top: 12px;
+}
+
+.dropdown-content.active {
+    display: block;
+}
+
+.dropdown-content a {
+    display: block;
+    color: var(--text-secondary);
+    text-decoration: none;
+    padding: 12px 16px;
+    border-radius: 6px;
+    transition: var(--transition);
+    white-space: nowrap;
+    font-size: 15px;
+}
+
+.dropdown-content a:hover {
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+}
+
+.dropdown-content a[href*="logout_process.php"] {
+    color: var(--primary-color);
+}
+
+.dropdown-content a[href*="logout_process.php"]:hover {
+    background: rgba(229, 9, 20, 0.1);
+}
+
 @media (max-width: 1024px) {
     .footer-content {
         grid-template-columns: repeat(2, 1fr);
     }
-
     .movie-grid {
         grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
     }
@@ -550,27 +678,87 @@ body {
     .nav-actions .btn-login {
         display: none;
     }
-
     .mobile-menu-btn {
         display: flex;
     }
-
     .section-header {
         flex-direction: column;
         align-items: flex-start;
         gap: 16px;
     }
-
     .footer-content {
         grid-template-columns: 1fr;
     }
-
     .movie-grid {
         grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
         gap: 16px;
     }
-
     .section {
         padding: 40px 0;
     }
+}
+/* --- HIỆU ỨNG HOVER POSTER --- */
+.movie-card {
+    position: relative;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.movie-poster {
+    position: relative;
+    /* ...các thuộc tính cũ... */
+}
+
+/* Lớp phủ đen (Mặc định ẩn) */
+.movie-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7); /* Màu đen mờ */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 15px; /* Khoảng cách giữa 2 nút */
+    opacity: 0; /* Ẩn */
+    transition: all 0.3s ease;
+    z-index: 2;
+}
+
+/* Khi rê chuột vào Card -> Hiện lớp phủ */
+.movie-card:hover .movie-overlay {
+    opacity: 1;
+}
+
+/* Nút bấm trong Overlay */
+.overlay-btn {
+    padding: 10px 24px;
+    border-radius: 30px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.2s;
+    min-width: 120px;
+    text-align: center;
+}
+
+.btn-detail {
+    background: transparent;
+    border: 2px solid #fff;
+    color: #fff;
+}
+.btn-detail:hover {
+    background: #fff;
+    color: #000;
+}
+
+.btn-buy-overlay {
+    background: var(--primary-color);
+    border: 2px solid var(--primary-color);
+    color: #fff;
+}
+.btn-buy-overlay:hover {
+    background: #b20710;
+    border-color: #b20710;
 }

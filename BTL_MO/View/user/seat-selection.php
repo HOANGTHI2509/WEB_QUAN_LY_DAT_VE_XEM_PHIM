@@ -1,153 +1,138 @@
 <?php
 // BTL_MO/View/user/seat-selection.php
+session_start();
 
-// 1. BẮT BUỘC ĐĂNG NHẬP
-include_once '../../functions/auth.php'; // Sẽ tự động chuyển hướng nếu chưa login
-// 2. GỌI CÁC HÀM CẦN THIẾT
+// 1. KIỂM TRA ĐĂNG NHẬP
+if (!isset($_SESSION['user_id'])) {
+    header("location: login.php?error=required");
+    exit;
+}
+
 require_once '../../functions/showtimes_functions.php';
+require_once '../../functions/seats_functions.php'; 
 
-// 3. LẤY DỮ LIỆU SUẤT CHIẾU
+// 2. KIỂM TRA QUYỀN (ADMIN HAY USER)
+$is_admin = (isset($_SESSION['role']) && $_SESSION['role'] == 'Admin');
+
+// 3. LẤY DỮ LIỆU
 $showtime_id = $_GET['showtime'] ?? null;
-if (empty($showtime_id)) {
-    header("location: index.php?error=no_showtime");
+if (!$showtime_id) {
+    header("location: index.php");
     exit;
 }
 
-$showtime_detail = getShowtimeDetail((int)$showtime_id);
-if (!$showtime_detail) {
-    header("location: index.php?error=invalid_showtime");
+$showtime = getShowtimeDetail($showtime_id);
+if (!$showtime) {
+    echo "Suất chiếu không tồn tại.";
     exit;
 }
 
-// 4. LẤY DỮ LIỆU GHẾ
-$seats_data = getSeatsForShowtime($showtime_detail['ShowtimeID'], $showtime_detail['ScreenID']);
-
-// 5. TỔ CHỨC LẠI GHẾ THEO HÀNG (để PHP render)
-$seat_rows = [];
-foreach ($seats_data as $seat) {
-    $seat_rows[$seat['RowName']][] = $seat;
+$seats = getSeatsForShowtime($showtime_id, $showtime['ScreenID']);
+$seat_map = [];
+foreach ($seats as $s) {
+    $seat_map[$s['RowName']][] = $s;
 }
 
-// 6. THIẾT LẬP GIÁ VÉ (để JS sử dụng)
-$seatPrices = [
-    'normal' => (float)$showtime_detail['Price'],
-    'vip' => (float)$showtime_detail['Price'] + 20000 // Giả sử VIP đắt hơn 20k
-    // (Bạn nên thêm cột PriceSurcharge vào SeatTypes và cộng vào đây)
-];
-
-// 7. CÀI ĐẶT BIẾN CHO HEADER/FOOTER
-$page_css = "seat-selection.css";
-$page_js = "seat-selection.js";
-
-// (Trang này dùng layout riêng, không dùng header/footer chung)
+$seat_types = getSeatTypes();
+$base_price = $showtime['Price'];
 ?>
 <!DOCTYPE html>
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chọn ghế - CinemaHub</title>
+    <title>Chọn ghế - <?php echo htmlspecialchars($showtime['MovieTitle']); ?></title>
     <link rel="stylesheet" href="../../assets/css/style.css">
     <link rel="stylesheet" href="../../assets/css/seat-selection.css">
     
+    <style>
+        .seat.type-1 { background-color: #7d7d7d; border-color: #999; color: #fff; }
+        .seat.type-2 { background: linear-gradient(135deg, #ffc107 0%, #ff9800 100%); border: 1px solid #ffb300; color: #000; font-weight: bold; }
+        
+        .seat.sold { 
+            background: #b71c1c !important; border-color: #d32f2f !important; color: #ffcdd2 !important; 
+            cursor: not-allowed; opacity: 0.7;
+            background-image: repeating-linear-gradient(45deg, transparent, transparent 5px, rgba(0,0,0,0.2) 5px, rgba(0,0,0,0.2) 10px);
+        }
+        .seat.held { background: #0288d1 !important; border-color: #0277bd !important; cursor: not-allowed; }
+        .seat.selected { 
+            background: #46d369 !important; border-color: #46d369 !important; color: #fff !important; 
+            transform: scale(1.1); box-shadow: 0 0 10px rgba(70, 211, 105, 0.5); z-index: 10;
+        }
+
+        /* CSS RIÊNG CHO ADMIN (CHỈ XEM) */
+        .admin-view-mode .seat { cursor: default !important; pointer-events: none; }
+        .admin-view-mode .seat:hover { transform: none; }
+        .admin-notice { background: #333; color: #ffc107; padding: 10px; text-align: center; border-radius: 8px; margin-bottom: 15px; border: 1px dashed #ffc107; }
+    </style>
+
     <script>
-      const showtimeId = <?php echo json_encode($showtime_detail['ShowtimeID']); ?>;
-      const seatPrices = <?php echo json_encode($seatPrices); ?>;
+        const showtimeId = <?php echo $showtime_id; ?>;
+        const basePrice = <?php echo $base_price; ?>;
+        const isAdmin = <?php echo $is_admin ? 'true' : 'false'; ?>; // Truyền biến sang JS
     </script>
 </head>
 <body>
     <nav class="navbar">
         <div class="container">
-            <div class="nav-content" style="justify-content: space-between;">
-                <div class="logo">
-                    <svg width="32" height="32"...></svg>
-                    <span>CinemaHub</span>
-                </div>
-                <div class="booking-steps">
-                    <div class="step active">
-                        <span class="step-number">1</span>
-                        <span class="step-label">Chọn ghế</span>
-                    </div>
-                    <div class="step">
-                        <span class="step-number">2</span>
-                        <span class="step-label">Thanh toán</span>
-                    </div>
-                </div>
-                <a href="index.php" class="btn-back">Quay lại</a>
+            <div class="nav-content">
+                
+                <div class="logo"><span>Cinema</span></div>
+                <a href="<?php echo $is_admin ? '../admin/showtimes.php' : 'index.php'; ?>" class="btn-back">Thoát</a>
             </div>
         </div>
     </nav>
 
     <main class="booking-container">
         <div class="container">
-            <form action="../../Handle/booking_process.php" method="POST">
-                
-                <input type="hidden" name="showtime_id" value="<?php echo $showtime_detail['ShowtimeID']; ?>">
-                <input type="hidden" name="user_id" value="<?php echo $_SESSION['user_id']; ?>">
-                
+            <form id="bookingForm" action="../../Handle/bookings_process.php" method="POST">
+                <input type="hidden" name="action" value="reserve_seats">
+                <input type="hidden" name="showtime_id" value="<?php echo $showtime_id; ?>">
+                <div id="hiddenInputs"></div>
+
                 <div class="booking-layout">
-                    <div class="screen-section">
-                        <div class="showtime-info" id="showtimeInfo">
-                            <div class="info-item">
-                                <div>
-                                    <span class="label">Phim</span>
-                                    <span class="value"><?php echo htmlspecialchars($showtime_detail['MovieTitle']); ?></span>
-                                </div>
-                            </div>
-                            <div class="info-item">
-                                <div>
-                                    <span class="label">Suất chiếu</span>
-                                    <span class="value"><?php echo date('d/m/Y H:i', strtotime($showtime_detail['StartTime'])); ?></span>
-                                </div>
-                            </div>
-                            <div class="info-item">
-                                <div>
-                                    <span class="label">Rạp</span>
-                                    <span class="value"><?php echo htmlspecialchars($showtime_detail['TheaterName']); ?> (<?php echo htmlspecialchars($showtime_detail['ScreenName']); ?>)</span>
-                                </div>
-                            </div>
+                    <div class="screen-section <?php echo $is_admin ? 'admin-view-mode' : ''; ?>">
+                        
+                        <?php if ($is_admin): ?>
+                            <div class="admin-notice">⚠️ Bạn đang xem ở chế độ <strong>ADMIN</strong> (Chỉ xem tình trạng ghế, không thể đặt vé).</div>
+                        <?php endif; ?>
+
+                        <div class="showtime-info">
+                            <div class="info-item"><span class="label">Phim:</span><span class="value"><?php echo htmlspecialchars($showtime['MovieTitle']); ?></span></div>
+                            <div class="info-item"><span class="label">Suất:</span><span class="value"><?php echo date('H:i - d/m/Y', strtotime($showtime['StartTime'])); ?></span></div>
+                            <div class="info-item"><span class="label">Rạp:</span><span class="value"><?php echo htmlspecialchars($showtime['TheaterName']); ?></span></div>
                         </div>
 
                         <div class="screen-wrapper">
-                            <div class="screen">
-                                <svg viewBox="0 0 200 30" preserveAspectRatio="none">
-                                    <path d="M0,30 Q100,0 200,30 L200,30 L0,30 Z" fill="currentColor"/>
-                                </svg>
-                                <span>MÀN HÌNH</span>
-                            </div>
+                            <div class="screen"><span>MÀN HÌNH</span></div>
 
                             <div class="seats-container" id="seatsContainer">
-                                <?php foreach ($seat_rows as $rowName => $seats): ?>
+                                <?php foreach ($seat_map as $row => $row_seats): ?>
                                     <div class="seat-row">
-                                        <span class="row-label"><?php echo $rowName; ?></span>
-                                        <?php foreach ($seats as $seat): ?>
-                                            <?php
-                                            // Xác định class cho ghế
-                                            $seat_class = '';
-                                            $is_occupied = $seat['IsBooked'];
-                                            $is_vip = ($seat['SeatType'] == 'VIP');
-                                            
-                                            if ($is_occupied) {
-                                                $seat_class = 'occupied';
-                                            } elseif ($is_vip) {
-                                                $seat_class = 'vip';
-                                            } else {
-                                                $seat_class = 'available';
-                                            }
-                                            ?>
-                                            <div class="seat <?php echo $seat_class; ?>"
-                                                data-seat-id="<?php echo $seat['SeatID']; ?>"
-                                                data-seat-name="<?php echo $seat['RowName'] . $seat['SeatNumber']; ?>"
-                                                data-seat-type="<?php echo $seat['SeatType']; ?>"
-                                                <?php echo $is_occupied ? 'disabled' : ''; ?>
-                                                onclick="toggleSeat(this)"> <?php echo $seat['SeatNumber']; ?>
+                                        <span class="row-label"><?php echo $row; ?></span>
+                                        <?php foreach ($row_seats as $seat): 
+                                            $type_class = "type-" . $seat['SeatTypeID']; 
+                                            $status_class = ($seat['Status'] == 'available') ? '' : $seat['Status'];
+                                            $final_price = $base_price + ($seat['PriceSurcharge'] ?? 0);
+                                        ?>
+                                            <div class="seat <?php echo $type_class . ' ' . $status_class; ?>"
+                                                 data-seat-id="<?php echo $seat['SeatID']; ?>"
+                                                 data-seat-name="<?php echo $seat['RowName'] . $seat['SeatNumber']; ?>"
+                                                 data-price="<?php echo $final_price; ?>"
+                                                 onclick="toggleSeat(this)">
+                                                <?php echo $seat['SeatNumber']; ?>
                                             </div>
                                         <?php endforeach; ?>
                                     </div>
                                 <?php endforeach; ?>
                             </div>
 
-                            <div class="seat-legend">...</div>
+                            <div class="seat-legend">
+                                <div class="legend-item"><div class="seat-demo type-1"></div><span>Thường</span></div>
+                                <div class="legend-item"><div class="seat-demo type-2"></div><span>VIP</span></div>
+                                <div class="legend-item"><div class="seat-demo sold"></div><span>Đã bán</span></div>
+                                <div class="legend-item"><div class="seat-demo held"></div><span>Đang giữ</span></div>
+                                <div class="legend-item"><div class="seat-demo selected"></div><span>Đang chọn</span></div>
+                            </div>
                         </div>
                     </div>
 
@@ -159,34 +144,26 @@ $page_js = "seat-selection.js";
                                 <div id="selectedSeats" class="selected-seats-list">
                                     <p class="empty-message">Chưa chọn ghế</p>
                                 </div>
-                                <div id="seatFormInputContainer"></div>
                             </div>
-
                             <div class="summary-section">
-                                <div class="price-row">
-                                    <span>Tổng tiền ghế</span>
-                                    <span id="seatsTotal">0 ₫</span>
-                                </div>
-                                <div class="price-row total">
-                                    <span>Tổng cộng</span>
-                                    <span id="totalPrice">0 ₫</span>
-                                </div>
+                                <div class="price-row"><span>Tạm tính</span><span id="totalPrice">0 ₫</span></div>
                             </div>
-
-                            <button type="submit" class="btn-continue" id="btnContinue" disabled>
-                                Tiếp tục
-                            </button>
-                        </div>
-
-                        <div class="countdown-timer">
-                            <span>Thời gian giữ ghế: <strong id="countdown">10:00</strong></span>
+                            
+                            <?php if (!$is_admin): ?>
+                                <button type="submit" class="btn-continue" id="btnContinue" disabled>
+                                    Tiếp tục chọn đồ ăn
+                                </button>
+                            <?php else: ?>
+                                <button type="button" class="btn-continue" disabled style="background: #333; cursor: not-allowed;">
+                                    Admin không thể đặt vé
+                                </button>
+                            <?php endif; ?>
                         </div>
                     </div>
                 </div>
-            </form> </div>
+            </form>
+        </div>
     </main>
-
-    <script src="../../assets/js/all_effects.js"></script>
     <script src="../../assets/js/seat-selection.js"></script>
 </body>
 </html>

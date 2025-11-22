@@ -1,22 +1,46 @@
 <?php
 // BTL_MO/functions/showtimes_functions.php
-
 require_once 'db_connect.php';
 
-/* ============================================== */
-/* CÁC HÀM LẤY DỮ LIỆU (GET) */
-/* ============================================== */
+/**
+ * Lấy danh sách suất chiếu của một phim (Gom nhóm theo Ngày và Rạp)
+ */
+function getShowtimesByMovie($movie_id) {
+    $conn = getDbConnection();
+    $showtimes = [];
+    
+    $sql = "SELECT st.ShowtimeID, st.StartTime, st.Price, 
+                   t.Name as TheaterName, s.Name as ScreenName
+            FROM Showtimes st
+            JOIN Screens s ON st.ScreenID = s.ScreenID
+            JOIN Theaters t ON s.TheaterID = t.TheaterID
+            WHERE st.MovieID = ? AND st.StartTime >= NOW()
+            ORDER BY st.StartTime ASC";
+            
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("i", $movie_id);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    
+    if ($result) {
+        while ($row = $result->fetch_assoc()) {
+            $date = date('Y-m-d', strtotime($row['StartTime']));
+            $showtimes[$date][$row['TheaterName']][] = $row;
+        }
+    }
+    
+    $stmt->close();
+    $conn->close();
+    return $showtimes;
+}
 
 /**
  * Lấy danh sách suất chiếu (cho trang admin)
- * @param array $filters (chứa 'date', 'movie_id', 'theater_id')
- * @return array Danh sách suất chiếu
  */
 function getFilteredShowtimes($filters = []) {
     $conn = getDbConnection();
     $showtimes = [];
     
-    // Câu lệnh SQL phức tạp để JOIN 5 bảng
     $sql = "SELECT 
                 st.ShowtimeID, st.StartTime, st.Price,
                 m.Title AS MovieTitle, m.PosterURL,
@@ -29,26 +53,21 @@ function getFilteredShowtimes($filters = []) {
             JOIN Screens sc ON st.ScreenID = sc.ScreenID
             JOIN Theaters t ON sc.TheaterID = t.TheaterID
             LEFT JOIN Tickets tk ON st.ShowtimeID = tk.ShowtimeID
-            WHERE 1=1"; // Bắt đầu mệnh đề WHERE
+            WHERE 1=1";
 
     $params = [];
     $types = "";
 
-    // Thêm bộ lọc ngày
     if (!empty($filters['date'])) {
         $sql .= " AND DATE(st.StartTime) = ?";
         $params[] = $filters['date'];
         $types .= "s";
     }
-
-    // Thêm bộ lọc phim
     if (!empty($filters['movie_id'])) {
         $sql .= " AND st.MovieID = ?";
         $params[] = $filters['movie_id'];
         $types .= "i";
     }
-    
-    // Thêm bộ lọc rạp
     if (!empty($filters['theater_id'])) {
         $sql .= " AND t.TheaterID = ?";
         $params[] = $filters['theater_id'];
@@ -58,14 +77,14 @@ function getFilteredShowtimes($filters = []) {
     $sql .= " GROUP BY st.ShowtimeID ORDER BY st.StartTime ASC";
 
     $stmt = $conn->prepare($sql);
-    if ($types) {
+    if (!empty($types)) {
         $stmt->bind_param($types, ...$params);
     }
     
     $stmt->execute();
     $result = $stmt->get_result();
     
-    if ($result && $result->num_rows > 0) {
+    if ($result) {
         $showtimes = $result->fetch_all(MYSQLI_ASSOC);
     }
     
@@ -75,9 +94,7 @@ function getFilteredShowtimes($filters = []) {
 }
 
 /**
- * Lấy thông tin chi tiết 1 suất chiếu (cho trang đặt vé)
- * @param int $showtime_id ID suất chiếu
- * @return array|null Dữ liệu suất chiếu
+ * Lấy thông tin chi tiết 1 suất chiếu
  */
 function getShowtimeDetail($showtime_id) {
     $conn = getDbConnection();
@@ -99,7 +116,7 @@ function getShowtimeDetail($showtime_id) {
     $result = $stmt->get_result();
     
     $detail = null;
-    if ($result->num_rows === 1) {
+    if ($result && $result->num_rows === 1) {
         $detail = $result->fetch_assoc();
     }
     
@@ -109,75 +126,42 @@ function getShowtimeDetail($showtime_id) {
 }
 
 /**
- * Lấy sơ đồ ghế ngồi cho 1 suất chiếu
- * @param int $showtime_id ID suất chiếu
- * @param int $screen_id ID phòng chiếu
- * @return array Danh sách ghế
+ * Lấy sơ đồ ghế với trạng thái THỰC TẾ (Sold, Held, Available)
  */
 function getSeatsForShowtime($showtime_id, $screen_id) {
     $conn = getDbConnection();
-    $seats = [];
-
-    // Lấy TẤT CẢ ghế của phòng (ScreenID)
-    // Sau đó JOIN với bảng Tickets để xem ghế nào ĐÃ ĐƯỢC ĐẶT (IsBooked)
-    // CHỈ cho suất chiếu này (ShowtimeID)
+    
+    // SQL NÂNG CẤP:
+    // - Kiểm tra bảng Tickets để xem ghế đã có vé chưa
+    // - Join bảng Bookings để xem vé đó đã trả tiền hay đang giữ
+    // - Logic: 
+    //    + Paid -> Sold (Đỏ)
+    //    + Pending & < 10 phút -> Held (Xanh)
+    //    + Pending & > 10 phút -> Coi như NULL (Trống)
+    
     $sql = "SELECT 
-                s.SeatID, s.RowName, s.SeatNumber,
-                st.Name AS SeatType,
-                st.PriceSurcharge,
-                (CASE WHEN tk.TicketID IS NOT NULL THEN 1 ELSE 0 END) AS IsBooked
+                s.SeatID, s.RowName, s.SeatNumber, s.SeatTypeID, 
+                st.Name AS SeatType, st.PriceSurcharge,
+                (CASE 
+                    WHEN b.PaymentStatus = 'Paid' THEN 'sold'
+                    WHEN b.PaymentStatus = 'Pending' AND b.BookingTime >= (NOW() - INTERVAL 10 MINUTE) THEN 'held'
+                    ELSE 'available'
+                END) AS Status
             FROM Seats s
             JOIN SeatTypes st ON s.SeatTypeID = st.SeatTypeID
             LEFT JOIN Tickets tk ON s.SeatID = tk.SeatID AND tk.ShowtimeID = ?
+            LEFT JOIN Bookings b ON tk.BookingID = b.BookingID
             WHERE s.ScreenID = ?
-            ORDER BY s.RowName, s.SeatNumber";
+            ORDER BY LENGTH(s.RowName), s.RowName, s.SeatNumber";
             
     $stmt = $conn->prepare($sql);
     $stmt->bind_param("ii", $showtime_id, $screen_id);
     $stmt->execute();
-    $result = $stmt->get_result();
-
-    if ($result && $result->num_rows > 0) {
-        $seats = $result->fetch_all(MYSQLI_ASSOC);
-    }
-
-    $stmt->close();
-    $conn->close();
-    return $seats;
+    return $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
 }
-
-/**
- * Lấy danh sách phòng chiếu của 1 rạp (cho admin)
- * @param int $theater_id ID rạp
- * @return array Danh sách phòng chiếu
- */
-function getScreensByTheater($theater_id) {
-    $conn = getDbConnection();
-    $screens = [];
-
-    $sql = "SELECT ScreenID, Name, Capacity FROM Screens WHERE TheaterID = ? ORDER BY Name";
-    $stmt = $conn->prepare($sql);
-    $stmt->bind_param("i", $theater_id);
-    $stmt->execute();
-    $result = $stmt->get_result();
-
-    if ($result && $result->num_rows > 0) {
-        $screens = $result->fetch_all(MYSQLI_ASSOC);
-    }
-    
-    $stmt->close();
-    $conn->close();
-    return $screens;
-}
-
-/* ============================================== */
-/* CÁC HÀM XỬ LÝ (CRUD) */
-/* ============================================== */
 
 /**
  * Thêm suất chiếu mới
- * @param array $data Dữ liệu từ $_POST
- * @return bool|string True nếu thành công, chuỗi lỗi
  */
 function addShowtime($data) {
     $conn = getDbConnection();
@@ -200,7 +184,6 @@ function addShowtime($data) {
         $error = $stmt->error;
         $stmt->close();
         $conn->close();
-        // Kiểm tra lỗi trùng lặp (ví dụ: cùng phòng, cùng giờ)
         if (strpos($error, 'Duplicate entry') !== false) {
             return "Lỗi: Đã có suất chiếu tại phòng này vào thời điểm này.";
         }
@@ -210,8 +193,6 @@ function addShowtime($data) {
 
 /**
  * Cập nhật suất chiếu
- * @param array $data Dữ liệu từ $_POST
- * @return bool|string True nếu thành công, chuỗi lỗi
  */
 function updateShowtime($data) {
     $conn = getDbConnection();
@@ -241,13 +222,10 @@ function updateShowtime($data) {
 
 /**
  * Xóa suất chiếu
- * @param int $showtime_id ID suất chiếu
- * @return array [success (bool), message (string)]
  */
 function deleteShowtime($showtime_id) {
     $conn = getDbConnection();
     
-    // 1. Kiểm tra xem đã có ai đặt vé cho suất này chưa
     $sql_check = "SELECT COUNT(*) AS TicketCount FROM Tickets WHERE ShowtimeID = ?";
     $stmt_check = $conn->prepare($sql_check);
     $stmt_check->bind_param("i", $showtime_id);
@@ -261,19 +239,13 @@ function deleteShowtime($showtime_id) {
         return ['success' => false, 'message' => 'Không thể xóa suất chiếu này vì đã có vé được bán.'];
     }
 
-    // 2. Nếu chưa có vé, tiến hành xóa
     $sql_delete = "DELETE FROM Showtimes WHERE ShowtimeID = ?";
     $stmt_delete = $conn->prepare($sql_delete);
     $stmt_delete->bind_param("i", $showtime_id);
 
     if ($stmt_delete->execute()) {
-        if ($stmt_delete->affected_rows > 0) {
-            $message = 'Xóa suất chiếu thành công!';
-            $success = true;
-        } else {
-            $message = 'Không tìm thấy suất chiếu để xóa.';
-            $success = false;
-        }
+        $success = $stmt_delete->affected_rows > 0;
+        $message = $success ? 'Xóa suất chiếu thành công!' : 'Không tìm thấy suất chiếu để xóa.';
     } else {
         $message = 'Xóa thất bại: ' . $stmt_delete->error;
         $success = false;
@@ -282,5 +254,22 @@ function deleteShowtime($showtime_id) {
     $stmt_delete->close();
     $conn->close();
     return ['success' => $success, 'message' => $message];
+}
+
+// Hàm hỗ trợ cho get_screens_api.php (Lấy phòng theo rạp)
+function getScreensByTheater($theater_id) {
+    $conn = getDbConnection();
+    $screens = [];
+    $sql = "SELECT ScreenID, Name, Capacity FROM Screens WHERE TheaterID = ? ORDER BY Name";
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("i", $theater_id);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    if ($result) {
+        $screens = $result->fetch_all(MYSQLI_ASSOC);
+    }
+    $stmt->close();
+    $conn->close();
+    return $screens;
 }
 ?>

@@ -4,9 +4,9 @@
 function getDbConnection() {
     $servername = "localhost"; // ⚠️ Tên máy chủ (thường là "localhost")
     $username = "root";
-    $password = "";
+    $password = "889900";
     $dbname = "cinema_db";
-    $port = 3307;
+    $port = 3306;
 
     $conn = new mysqli($servername, $username, $password, $dbname, $port);
 

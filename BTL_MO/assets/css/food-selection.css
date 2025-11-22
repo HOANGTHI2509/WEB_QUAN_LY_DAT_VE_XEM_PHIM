@@ -1,0 +1,159 @@
+/* BTL_MO/assets/css/food-selection.css */
+
+/* --- LAYOUT --- */
+.booking-container {
+    padding: 40px 0 80px;
+    min-height: 80vh;
+}
+
+.booking-layout {
+    display: grid;
+    grid-template-columns: 1fr 350px;
+    gap: 30px;
+}
+
+/* --- CỘT TRÁI: FOOD LIST --- */
+.food-section .section-header {
+    margin-bottom: 30px;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 20px;
+}
+
+.section-header h2 {
+    font-size: 24px;
+    margin-bottom: 8px;
+}
+
+.food-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 20px;
+}
+
+.food-card {
+    background: var(--bg-secondary);
+    border-radius: 8px;
+    overflow: hidden;
+    transition: transform 0.2s, border-color 0.2s;
+    border: 1px solid var(--border-color);
+    display: flex;
+    flex-direction: column;
+}
+
+.food-card:hover {
+    transform: translateY(-5px);
+    border-color: var(--primary-color);
+}
+
+.food-img {
+    height: 140px;
+    overflow: hidden;
+    background: #fff;
+}
+
+.food-img img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.food-info {
+    padding: 15px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.food-info h3 {
+    font-size: 16px;
+    margin-bottom: 5px;
+    height: 40px; /* Giới hạn 2 dòng tiêu đề */
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+}
+
+.food-info .desc {
+    font-size: 12px;
+    color: var(--text-secondary);
+    margin-bottom: 10px;
+    height: 36px; /* Giới hạn mô tả */
+    overflow: hidden;
+}
+
+.food-info .price {
+    font-size: 16px;
+    color: var(--primary-color);
+    font-weight: bold;
+    margin-bottom: 15px;
+    margin-top: auto; /* Đẩy giá xuống dưới */
+}
+
+/* --- NÚT CỘNG TRỪ --- */
+.qty-control {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: var(--bg-tertiary);
+    border-radius: 4px;
+    padding: 4px;
+    border: 1px solid #444;
+}
+
+.btn-qty {
+    width: 28px;
+    height: 28px;
+    border-radius: 4px;
+    border: none;
+    background: #555;
+    color: #fff;
+    font-weight: bold;
+    cursor: pointer;
+    transition: 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-qty:hover {
+    background: var(--primary-color);
+}
+
+.qty-val {
+    font-weight: bold;
+    width: 30px;
+    text-align: center;
+    color: #fff;
+}
+
+/* --- CỘT PHẢI: SIDEBAR --- */
+.booking-summary .movie-title {
+    font-size: 18px;
+    color: #fff;
+    margin-bottom: 15px;
+    border-bottom: 1px solid #444;
+    padding-bottom: 10px;
+}
+
+.info-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 8px;
+    font-size: 14px;
+}
+
+.info-row span:first-child {
+    color: var(--text-secondary);
+}
+
+/* --- RESPONSIVE --- */
+@media (max-width: 1024px) {
+    .booking-layout {
+        grid-template-columns: 1fr; /* Chuyển thành 1 cột */
+    }
+    .booking-sidebar {
+        order: -1; /* Đưa thanh toán lên đầu trên mobile */
+        margin-bottom: 30px;
+    }
+}
