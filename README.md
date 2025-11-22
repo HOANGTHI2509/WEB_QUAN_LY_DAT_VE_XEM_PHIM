@@ -54,7 +54,7 @@ Trong bối cảnh công nghệ phát triển, nhu cầu giải trí và sự ti
 </div>
 ## 🚀 3. Hình ảnh các chức năng
 ### Trang đăng nhập
-<img width="1902" height="931" alt="image" src="https://github.com/user-attachments/assets/c982cf12-24f8-4137-8ad4-d6c8768c5e54" />
+![Đăng nhập](docs/img/Trang_Dang_Nhap.png)
 ### Trang dashboard admin
 <img width="1885" height="935" alt="image" src="https://github.com/user-attachments/assets/ef86f98f-d8aa-4bdd-8157-ee1bae6a0a09" />
 ### Trang dashboard cán bộ 
