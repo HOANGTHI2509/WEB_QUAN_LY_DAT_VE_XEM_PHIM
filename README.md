@@ -54,6 +54,7 @@ Trong bối cảnh công nghệ phát triển, nhu cầu giải trí và sự ti
 </div>
 ## 🚀 3. Hình ảnh các chức năng
 ## 1. Trang đăng nhập
+
 ![Đăng nhập / Đăng ký](docs/img/Trang_Dang_Nhap.png)
 
 ## 2. Trang dashboard admin
@@ -96,12 +97,18 @@ Trong bối cảnh công nghệ phát triển, nhu cầu giải trí và sự ti
 
 ![Chi tiết phim + Trailer](docs/img/Trang_Chi_Tiet_Phim.png)
 
-
+## 11. Trang chọn ghế xem phim
 ![Chọn ghế xem phim](docs/img/Trang_Chon_Ghe_Xem.png)
+
+## 11. Trang chọn đồ ăn nước uống
 
 ![Chọn đồ ăn & combo](docs/img/Trang_chon_do_an.png)
 
+## 11. Trang chọn phương thức thanh toántoán
+
 ![Chọn phương thức thanh toán](docs/img/Trang_chon_Phuong_Thuc_Thanh_Toan.png)
+
+## 11. Trang vé xem phim có mã 
 
 ![Vé xem phim (QR Code)](docs/img/Ve_Xem_Phim.png)
 ## ⚙️ 4. Cài đặt
@@ -121,9 +128,9 @@ Clone project về thư mục `htdocs` của XAMPP (ví dụ ổ C):
 
 ```bash
 cd C:\xampp\htdocs
-https://github.com/tyanzuq2811/BTL_Quan_ly_doan_vien.git
+https://github.com/HOANGTHI2509/WEB_QUAN_LY_DAT_VE_XEM_PHIM.git
 Truy cập project qua đường dẫn:
-👉 http://localhost/authentication_login.
+👉 http://localhost/BTL_MO/View/user/index.php.
 ```
 ### 4.3. Setup database
 Mở XAMPP Control Panel, Start Apache và MySQL
@@ -131,7 +138,7 @@ Mở XAMPP Control Panel, Start Apache và MySQL
 Truy cập MySQL WorkBench
 Tạo database:
 ```bash
-CREATE DATABASE IF NOT EXISTS quan_ly_doan_vien
+CREATE DATABASE IF NOT EXISTS ccinema_db
    CHARACTER SET utf8mb4
    COLLATE utf8mb4_unicode_ci;
 ```
@@ -145,7 +152,7 @@ Mở file config.php (hoặc .env) trong project, chỉnh thông tin DB:
         $servername = "localhost";
         $username = "root";
         $password = "";
-        $dbname = "quan_ly_doan_vien";
+        $dbname = "cinema_db";
         $port = 3306;
         $conn = mysqli_connect($servername, $username, $password, $dbname, $port);
         if (!$conn) {
@@ -160,16 +167,13 @@ Mở file config.php (hoặc .env) trong project, chỉnh thông tin DB:
 Mở XAMPP Control Panel → Start Apache và MySQL
 
 Truy cập hệ thống:
-👉 http://localhost/index.php
+👉 http://localhost/BTL_MO/View/user/index.php
 
 ### 4.6. Đăng nhập lần đầu
-Hệ thống có thể cấp tài khoản admin 
+Đăng ký tài khoản mới
 
-Sau khi đăng nhập Admin có thể:
+Sau vào Cơ sở dữ liệu chuyển quyền từ User sang Admin ( do mật khẩu mã hóa hash 1 chiều)
 
-Tạo thông tin tổ chức đoàn (Đoàn trường, Liên chi, Chi đoàn)
+Đăng nhập sử dụng chức năng của quản trị viên.
 
-Thêm đoàn viên và cấp tài khoản
-
-Quản lý phân quyền theo cấp
     
