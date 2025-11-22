@@ -56,29 +56,46 @@ Trong bối cảnh công nghệ phát triển, nhu cầu giải trí và sự ti
 ## 1. Trang đăng nhập
 ![Đăng nhập / Đăng ký](docs/img/Trang_Dang_Nhap.png)
 
-## 2. Giao diện quản trị (Admin)
+## 2. Trang dashboard admin
 
 ![Dashboard tổng quan](docs/img/Trang_Quan_tri.png)
 
+## 3. Trang Quản lý Phim
+
 ![Quản lý phim](docs/img/Trang_Quan_Ly_Phim.png)
+
+## 4. Trang Quản lý rạp chiếu
 
 ![Quản lý rạp chiếu](docs/img/Trang_Quan_Ly_Rap_Chieu.png)
 
+## 5. Trang Quản lý phòng chiếu
+
 ![Quản lý phòng chiếu](docs/img/Trang_Quan_ly_Phong_Chieu.png)
+
+## 5. Trang Quản lý xuất chiếu
 
 ![Quản lý suất chiếu](docs/img/Trang_Quan_ly_Xuat_chieu.png)
 
+## 7. Trang Quản lý đơn hàng đặt vé xem phim
+
 ![Quản lý đơn hàng](docs/img/Trang_Quan_ly_Don_Hang.png)
+
+## 8. Trang Quản đồ ăn & combocombo
 
 ![Quản lý đồ ăn & combo](docs/img/Trang_Quan_Ly_Do_An.png)
 
+## 9. Trang Quản lý người dùng
+
 ![Quản lý người dùng](docs/img/Trang_Quan_Ly_Nguoi_Dung.png)
 
-## 3. Giao diện người dùng (Khách đặt vé)
+## 10. Trang chủ web
 
 ![Trang chủ](docs/img/Trang_Chu.png)
 
+## 11. Trang chi tiết phim
+
 ![Chi tiết phim + Trailer](docs/img/Trang_Chi_Tiet_Phim.png)
+
 
 ![Chọn ghế xem phim](docs/img/Trang_Chon_Ghe_Xem.png)
 
