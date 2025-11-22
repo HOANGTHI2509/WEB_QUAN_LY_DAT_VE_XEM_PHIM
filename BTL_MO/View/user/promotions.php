@@ -10,7 +10,7 @@ $page_css = "home.css"; // Dùng chung CSS với trang chủ (vì có .promo-gri
 include 'partials/header.php';
 ?>
 
-<title><?php echo $page_title; ?> - CinemaHub</title>
+<title><?php echo $page_title; ?> - Cinema</title>
 
 <main class="section">
     <div class="container">

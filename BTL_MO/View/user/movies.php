@@ -61,11 +61,14 @@ include 'partials/header.php';
                     <div class="movie-card">
                         <div class="movie-poster">
                             <img src="<?php echo getPosterLink($movie['PosterURL']); ?>" 
-                                 alt="<?php echo htmlspecialchars($movie['Title']); ?>">
+                                alt="<?php echo htmlspecialchars($movie['Title']); ?>">
                             
                             <div class="movie-overlay">
-                                </div>
-                        </div>
+                                <a href="movie-detail.php?id=<?php echo $movie['MovieID']; ?>" class="overlay-btn btn-detail">
+                                    Chi tiết
+                                </a>
+                            </div>
+                            </div>
                         <div class="movie-info">
                             <h3><?php echo htmlspecialchars($movie['Title']); ?></h3>
                             <div class="movie-meta">

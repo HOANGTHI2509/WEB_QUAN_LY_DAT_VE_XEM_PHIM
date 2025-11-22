@@ -40,7 +40,7 @@ if (isset($_SESSION['user_id']) && !empty($_SESSION['user_id'])) {
                     <span>CinemaHub</span>
                 </a>
                 <h1>Đăng ký</h1>
-                <p>Tạo tài khoản để trải nghiệm CinemaHub</p>
+                <p>Tạo tài khoản để trải nghiệm Cinema</p>
             </div>
 
             <?php

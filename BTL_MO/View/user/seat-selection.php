@@ -11,7 +11,7 @@ if (!isset($_SESSION['user_id'])) {
 require_once '../../functions/showtimes_functions.php';
 require_once '../../functions/seats_functions.php'; 
 
-// 2. KIỂM TRA QUYỀN (ADMIN HAY USER)
+// 2. KIỂM TRA QUYỀN
 $is_admin = (isset($_SESSION['role']) && $_SESSION['role'] == 'Admin');
 
 // 3. LẤY DỮ LIỆU
@@ -63,19 +63,24 @@ $base_price = $showtime['Price'];
         .admin-view-mode .seat { cursor: default !important; pointer-events: none; }
         .admin-view-mode .seat:hover { transform: none; }
         .admin-notice { background: #333; color: #ffc107; padding: 10px; text-align: center; border-radius: 8px; margin-bottom: 15px; border: 1px dashed #ffc107; }
+        
+        /* CSS ĐỒNG HỒ ĐẾM NGƯỢC */
+        .countdown-box {
+            background: #e50914; color: #fff; padding: 12px; text-align: center; border-radius: 8px; 
+            margin-bottom: 20px; font-weight: bold; font-size: 16px; box-shadow: 0 4px 10px rgba(229, 9, 20, 0.3);
+        }
     </style>
 
     <script>
         const showtimeId = <?php echo $showtime_id; ?>;
         const basePrice = <?php echo $base_price; ?>;
-        const isAdmin = <?php echo $is_admin ? 'true' : 'false'; ?>; // Truyền biến sang JS
+        const isAdmin = <?php echo $is_admin ? 'true' : 'false'; ?>; 
     </script>
 </head>
 <body>
     <nav class="navbar">
         <div class="container">
             <div class="nav-content">
-                
                 <div class="logo"><span>Cinema</span></div>
                 <a href="<?php echo $is_admin ? '../admin/showtimes.php' : 'index.php'; ?>" class="btn-back">Thoát</a>
             </div>
@@ -139,6 +144,12 @@ $base_price = $showtime['Price'];
                     <div class="booking-sidebar">
                         <div class="booking-summary">
                             <h3>Thông tin đặt vé</h3>
+                            
+                            <?php if (!$is_admin): ?>
+                                <div class="countdown-box">
+                                    Thời gian giữ ghế: <span id="countdown">10:00</span>
+                                </div>
+                            <?php endif; ?>
                             <div class="summary-section">
                                 <h4>Ghế đã chọn</h4>
                                 <div id="selectedSeats" class="selected-seats-list">
@@ -164,6 +175,40 @@ $base_price = $showtime['Price'];
             </form>
         </div>
     </main>
+    
     <script src="../../assets/js/seat-selection.js"></script>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Chỉ chạy nếu không phải Admin
+            if (!isAdmin) {
+                startCountdown(600); // 10 phút = 600 giây
+            }
+        });
+
+        function startCountdown(duration) {
+            const display = document.getElementById('countdown');
+            if (!display) return;
+
+            let timer = duration, minutes, seconds;
+            
+            const interval = setInterval(function () {
+                minutes = parseInt(timer / 60, 10);
+                seconds = parseInt(timer % 60, 10);
+
+                minutes = minutes < 10 ? "0" + minutes : minutes;
+                seconds = seconds < 10 ? "0" + seconds : seconds;
+
+                display.textContent = minutes + ":" + seconds;
+
+                if (--timer < 0) {
+                    clearInterval(interval);
+                    display.textContent = "00:00";
+                    alert("Đã hết thời gian giữ ghế! Trang sẽ tải lại để cập nhật trạng thái.");
+                    window.location.reload(); // Tải lại trang -> Server sẽ tự nhả ghế quá hạn
+                }
+            }, 1000);
+        }
+    </script>
 </body>
 </html>
