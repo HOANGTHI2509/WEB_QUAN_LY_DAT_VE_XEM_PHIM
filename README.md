@@ -40,6 +40,8 @@ Trong bối cảnh công nghệ phát triển, nhu cầu giải trí và sự ti
 [![PHP](https://img.shields.io/badge/PHP-777BB4?style=for-the-badge&logo=php&logoColor=white)](https://www.php.net/)
 [![HTML5](https://img.shields.io/badge/HTML5-E34F26?style=for-the-badge&logo=html5&logoColor=white)](#)
 [![Cpng" />
+### Trang đăng nhập
+![Đăng nhập](docs/img/Trang_Dang_Nhap.png)
 ### Trang dashboard admin
 <img width="1885" height="935" alt="image" src="https://github.com/user-attachments/assets/ef86f98f-d8aa-4bdd-8157-ee1bae6a0a09" />
 ### Trang dashboard cán bộ 
